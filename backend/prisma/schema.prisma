@@ -1,0 +1,128 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  STUDENT
+  INSTRUCTOR
+  ADMIN
+}
+
+model User {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String?
+  email     String   @unique
+  password  String
+  role      Role     @default(STUDENT)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  coursesCreated Course[]      @relation("InstructorCourses")
+  enrollments    Enrollment[]
+  progress       Progress[]
+  submissions    Submission[]
+}
+
+model Course {
+  id           String   @id @default(uuid()) @db.Uuid
+  title        String
+  description  String?
+  thumbnail    String?
+
+  instructorId String   @db.Uuid
+  instructor   User     @relation("InstructorCourses", fields: [instructorId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  lessons      Lesson[]
+  enrollments  Enrollment[]
+  assignments  Assignment[]
+}
+
+model Lesson {
+  id        String   @id @default(uuid()) @db.Uuid
+  title     String
+  videoUrl  String
+  order     Int
+
+  courseId  String   @db.Uuid
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  progress  Progress[]
+
+  @@unique([courseId, order])
+  @@index([courseId])
+}
+
+model Enrollment {
+  id        String   @id @default(uuid()) @db.Uuid
+
+  userId    String   @db.Uuid
+  courseId  String   @db.Uuid
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, courseId])
+  @@index([userId])
+  @@index([courseId])
+}
+
+model Progress {
+  id        String   @id @default(uuid()) @db.Uuid
+
+  userId    String   @db.Uuid
+  lessonId  String   @db.Uuid
+  completed Boolean  @default(false)
+  completedAt DateTime?
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  lesson    Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@unique([userId, lessonId])
+  @@index([userId])
+  @@index([lessonId])
+}
+
+model Assignment {
+  id          String   @id @default(uuid()) @db.Uuid
+  title       String
+  description String?
+  deadline    DateTime?
+
+  courseId    String   @db.Uuid
+  course      Course   @relation(fields: [courseId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  submissions Submission[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([courseId])
+}
+
+model Submission {
+  id           String   @id @default(uuid()) @db.Uuid
+  fileUrl      String
+  note         String?
+  grade        String?
+  submittedAt  DateTime @default(now())
+
+  assignmentId String   @db.Uuid
+  userId       String   @db.Uuid
+
+  assignment   Assignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@unique([assignmentId, userId])
+  @@index([assignmentId])
+  @@index([userId])
+}
