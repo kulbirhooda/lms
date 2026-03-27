@@ -5,18 +5,35 @@ import auth from "../lib/auth";
 const context = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(auth.user || null);
+  const [user, setUser] = useState(auth.user ?? undefined);
   const [loading, setLoading] = useState(false);
 
   async function signin({ email, password }) {
+    setLoading(true);
     const { user, token } = await authApi.signin({ email, password });
+
+    auth.token = token;
+    auth.user = user;
+
     setUser(user);
+    setLoading(false);
+
     return { user, token };
   }
 
-  async function signup({ name, email, password }) {
-    const { user, token } = await authApi.signup({ name, email, password });
+  async function signup({ name, email, password, isInstructor }) {
+    setLoading(true);
+
+    const { user, token } = isInstructor
+      ? await authApi.signupInstructor({ name, email, password })
+      : await authApi.signup({ name, email, password });
+
+    auth.token = token;
+    auth.user = user;
+
     setUser(user);
+    setLoading(false);
+
     return { user, token };
   }
 
@@ -32,7 +49,8 @@ export const AuthProvider = ({ children }) => {
         token: auth.token || "",
         signin,
         signup,
-        isLoggedIn: user ? true : false,
+        isLoggedIn: !!user,
+        loading,
         logout,
       }}
     >

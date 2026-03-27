@@ -4,9 +4,13 @@ import useAuth from "./context/authContext";
 import Signup from "./Pages/Signup";
 import Dashboard from "./Pages/Dashboard";
 import Signin from "./Pages/Signin";
+import InstructorDashboard from "./Pages/InstructorDashboard";
 
 const App = () => {
   const { isLoggedIn, user } = useAuth();
+
+  // 🔥 prevent rendering until user is checked
+  if (user === undefined) return null;
 
   return (
     <Routes>
@@ -39,7 +43,7 @@ const App = () => {
         path="/instructor/dashboard"
         element={
           isLoggedIn && user?.role === "INSTRUCTOR" ? (
-            <div>Instructor Dashboard</div>
+            <InstructorDashboard />
           ) : (
             <Navigate to="/signin" />
           )
