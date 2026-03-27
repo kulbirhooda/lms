@@ -2,39 +2,26 @@ import auth from "../lib/auth";
 import axios from "./axios";
 
 async function signup({ name, email, password }) {
-  const {
-    data: { data },
-  } = await axios({
+  const { data } = await axios({  // ✅ one level deep
     method: "post",
     url: "/api/auth/signup",
-    data: {
-      name,
-      email,
-      password,
-    },
+    data: { name, email, password },
   });
-  return data;
+  return data; // returns { user, token }
 }
 
 async function signin({ email, password }) {
-  const {
-    data: { data },
-  } = await axios({
+  const { data } = await axios({  // ✅ one level deep
     method: "post",
     url: "/api/auth/signin",
-    data: {
-      email,
-      password,
-    },
+    data: { email, password },
   });
-  return data;
+  return data; // returns { user, token }
 }
 
-async function me({ email, password }) {
-  const {
-    data: { data },
-  } = await axios({
-    method: "post",
+async function me() {
+  const { data } = await axios({  // ✅ one level deep
+    method: "get",               // ✅ should be GET not POST
     url: "/api/auth/me",
     headers: {
       Authorization: `Bearer ${auth.token || ""}`,
@@ -43,8 +30,4 @@ async function me({ email, password }) {
   return data;
 }
 
-export const authApi = {
-  signup,
-  signin,
-  me,
-};
+export const authApi = { signup, signin, me };
