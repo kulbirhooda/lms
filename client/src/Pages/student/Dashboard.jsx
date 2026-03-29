@@ -1,14 +1,16 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { courseApi } from "../api/courseApi";
-import useAuth from "../context/authContext";
+import { useNavigate } from "react-router";
+import { courseApi } from "../../api/courseApi";
+import useAuth from "../../context/authContext";
 
-const Dashboard = () => {
+const StudentDashboard = () => {
   const { logout } = useAuth();
+  const navigate = useNavigate();
   const [allCourses, setAllCourses] = useState([]);
   const [enrolledCourses, setEnrolledCourses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [enrollingId, setEnrollingId] = useState(null);
-  const [tab, setTab] = useState("browse"); // "browse" or "enrolled"
+  const [tab, setTab] = useState("browse");
 
   const fetchData = useCallback(async () => {
     try {
@@ -33,7 +35,7 @@ const Dashboard = () => {
     setEnrollingId(courseId);
     try {
       await courseApi.enrollInCourse(courseId);
-      await fetchData(); // refresh both lists
+      await fetchData();
     } catch (err) {
       alert(err.response?.data?.message || "Enrollment failed");
     } finally {
@@ -60,21 +62,26 @@ const Dashboard = () => {
 
       {tab === "browse" && (
         <div>
-          <h2>All Courses ({allCourses.length})</h2>
+          <h2>{"All Courses (" + allCourses.length + ")"}</h2>
           {allCourses.length === 0 ? (
             <p>No courses available yet.</p>
           ) : (
             allCourses.map((course) => (
-              <div key={course.id} style={{ border: "1px solid #ccc", margin: "10px", padding: "10px" }}>
+              <div
+                key={course.id}
+                style={{ border: "1px solid #ccc", margin: "10px 0", padding: "10px" }}
+              >
                 <h3>{course.title}</h3>
                 <p>{course.description}</p>
-                <p>By {course.instructor.name} • {course._count.lessons} lessons • {course._count.enrollments} students</p>
+                <p>
+                  {"By " + course.instructor.name + " • " + course._count.lessons + " lessons • " + course._count.enrollments + " students"}
+                </p>
                 <button
                   onClick={() => handleEnroll(course.id)}
                   disabled={isEnrolled(course.id) || enrollingId === course.id}
                 >
                   {isEnrolled(course.id)
-                    ? "Enrolled ✓"
+                    ? "Enrolled"
                     : enrollingId === course.id
                     ? "Enrolling..."
                     : "Enroll"}
@@ -87,15 +94,21 @@ const Dashboard = () => {
 
       {tab === "enrolled" && (
         <div>
-          <h2>My Courses ({enrolledCourses.length})</h2>
+          <h2>{"My Courses (" + enrolledCourses.length + ")"}</h2>
           {enrolledCourses.length === 0 ? (
-            <p>You haven't enrolled in any courses yet.</p>
+            <p>You have not enrolled in any courses yet.</p>
           ) : (
             enrolledCourses.map((course) => (
-              <div key={course.id} style={{ border: "1px solid #ccc", margin: "10px", padding: "10px" }}>
+              <div
+                key={course.id}
+                onClick={() => navigate("/student/courses/" + course.id, { state: { course } })}
+                style={{ border: "1px solid #ccc", margin: "10px 0", padding: "10px", cursor: "pointer" }}
+              >
                 <h3>{course.title}</h3>
                 <p>{course.description}</p>
-                <p>By {course.instructor.name} • {course._count.lessons} lessons</p>
+                <p>
+                  {"By " + course.instructor.name + " • " + course._count.lessons + " lessons"}
+                </p>
               </div>
             ))
           )}
@@ -105,4 +118,4 @@ const Dashboard = () => {
   );
 };
 
-export default Dashboard;
+export default StudentDashboard;

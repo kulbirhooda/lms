@@ -3,9 +3,11 @@ import { Navigate, Route, Routes } from "react-router";
 import useAuth from "./context/authContext";
 import Signup from "./Pages/Signup";
 import InstructorSignup from "./Pages/InstructorSignup";
-import Dashboard from "./Pages/Dashboard";
 import Signin from "./Pages/Signin";
-import InstructorDashboard from "./Pages/InstructorDashboard";
+import StudentDashboard from "./Pages/student/Dashboard";
+import CourseView from "./Pages/student/CourseView";
+import InstructorDashboard from "./Pages/instructor/InstructorDashboard";
+import CourseDetail from "./Pages/instructor/CourseDetail";
 
 const App = () => {
   const { isLoggedIn, user } = useAuth();
@@ -27,11 +29,13 @@ const App = () => {
         path="/signin"
         element={!isLoggedIn ? <Signin /> : <Navigate to={homePath} />}
       />
+
+      {/* Student routes */}
       <Route
         path="/dashboard"
         element={
           isLoggedIn && user?.role === "STUDENT" ? (
-            <Dashboard />
+            <StudentDashboard />
           ) : isLoggedIn ? (
             <Navigate to="/instructor/dashboard" />
           ) : (
@@ -39,6 +43,20 @@ const App = () => {
           )
         }
       />
+      <Route
+        path="/student/courses/:courseId"
+        element={
+          isLoggedIn && user?.role === "STUDENT" ? (
+            <CourseView />
+          ) : isLoggedIn ? (
+            <Navigate to="/instructor/dashboard" />
+          ) : (
+            <Navigate to="/signin" />
+          )
+        }
+      />
+
+      {/* Instructor routes */}
       <Route
         path="/instructor/dashboard"
         element={
@@ -51,6 +69,19 @@ const App = () => {
           )
         }
       />
+      <Route
+        path="/instructor/courses/:courseId"
+        element={
+          isLoggedIn && user?.role === "INSTRUCTOR" ? (
+            <CourseDetail />
+          ) : isLoggedIn ? (
+            <Navigate to="/dashboard" />
+          ) : (
+            <Navigate to="/signin" />
+          )
+        }
+      />
+
       <Route
         path="*"
         element={<Navigate to={isLoggedIn ? homePath : "/signin"} />}

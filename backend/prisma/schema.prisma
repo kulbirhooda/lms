@@ -93,19 +93,16 @@ model Progress {
 }
 
 model Assignment {
-  id          String   @id @default(uuid()) @db.Uuid
-  title       String
-  description String?
-  deadline    DateTime?
-
-  courseId    String   @db.Uuid
-  course      Course   @relation(fields: [courseId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-
-  submissions Submission[]
-
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
+  id              String    @id @default(uuid()) @db.Uuid
+  title           String
+  description     String?
+  deadline        DateTime?
+  questionFileUrl String?   // ← add this line
+  courseId        String    @db.Uuid
+  course          Course    @relation(fields: [courseId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  submissions     Submission[]
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
   @@index([courseId])
 }
 
