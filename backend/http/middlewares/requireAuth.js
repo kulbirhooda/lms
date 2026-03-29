@@ -12,7 +12,7 @@ export default async function requireAuth(req, res, next) {
         
         const user = await prisma.user.findUnique({
             where: { id: decoded.id },
-            select: { name: true, email: true, id: true }
+            select: { name: true, email: true, id: true, role: true }
         });
         if (!user) return res.status(401).json({ error: "Invalid or expired token" });
 

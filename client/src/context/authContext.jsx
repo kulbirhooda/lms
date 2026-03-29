@@ -5,7 +5,7 @@ import auth from "../lib/auth";
 const context = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(auth.user ?? undefined);
+  const [user, setUser] = useState(auth.user || null);
   const [loading, setLoading] = useState(false);
 
   async function signin({ email, password }) {

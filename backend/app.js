@@ -6,7 +6,7 @@ import { Server } from "socket.io";
 import cors from 'cors';
 import authRoutes from './http/routes/auth.routes.js';
 import userRoutes from './http/routes/users.routes.js';
-
+import courseRoutes from './http/routes/course.routes.js';
 import env from './env.js';
 const app = express();
 
@@ -22,6 +22,7 @@ app.use(cors({
 const httpServer = createServer(app);
 app.use('/api/auth', authRoutes);
 app.use('/api/user', userRoutes);
+app.use('/api/courses', courseRoutes);
 
 httpServer.listen(PORT, () => {
     console.log(`http://localhost:${PORT}`);

@@ -1,33 +1,44 @@
 import auth from "../lib/auth";
 import axios from "./axios";
 
+const authHeaders = () => ({
+  Authorization: `Bearer ${auth.token}`,
+});
+
 async function signup({ name, email, password }) {
-  const { data } = await axios({  // ✅ one level deep
+  const { data } = await axios({
     method: "post",
     url: "/api/auth/signup",
     data: { name, email, password },
   });
-  return data; // returns { user, token }
+  return data;
 }
 
-async function signin({ email, password }) {
-  const { data } = await axios({  // ✅ one level deep
+async function signupInstructor({ name, email, password }) {
+  const { data } = await axios({
     method: "post",
-    url: "/api/auth/signin",
-    data: { email, password },
-  });
-  return data; // returns { user, token }
-}
-
-async function me() {
-  const { data } = await axios({  // ✅ one level deep
-    method: "get",               // ✅ should be GET not POST
-    url: "/api/auth/me",
-    headers: {
-      Authorization: `Bearer ${auth.token || ""}`,
-    },
+    url: "/api/auth/signup/instructor", // ✅ matches your backend route
+    data: { name, email, password },
   });
   return data;
 }
 
-export const authApi = { signup, signin, me };
+async function signin({ email, password }) {
+  const { data } = await axios({
+    method: "post",
+    url: "/api/auth/signin",
+    data: { email, password },
+  });
+  return data;
+}
+
+async function me() {
+  const { data } = await axios({
+    method: "get",
+    url: "/api/auth/me",
+    headers: authHeaders(),
+  });
+  return data;
+}
+
+export const authApi = { signup, signupInstructor, signin, me };
