@@ -153,11 +153,12 @@ const CourseView = () => {
                   }}
                 >
                   <h3>{(index + 1) + ". " + lesson.title + (done ? " ✓" : "")}</h3>
-                  <p>
-                    <a href={lesson.videoUrl} target="_blank" rel="noreferrer">
-                      Watch Lesson
-                    </a>
-                  </p>
+                  <video
+                    controls
+                    width="100%"
+                    src={lesson.videoUrl}
+                    style={{ marginTop: "8px" }}
+                />
                   {!done && (
                     <button
                       onClick={() => handleMarkComplete(lesson.id)}

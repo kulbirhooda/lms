@@ -14,7 +14,7 @@ const CourseDetail = () => {
   const [lessons, setLessons] = useState([]);
   const [showLessonForm, setShowLessonForm] = useState(false);
   const [lessonTitle, setLessonTitle] = useState("");
-  const [videoUrl, setVideoUrl] = useState("");
+  const [videoFile, setVideoFile] = useState(null);
 
   const [assignments, setAssignments] = useState([]);
   const [showAssignmentForm, setShowAssignmentForm] = useState(false);
@@ -52,11 +52,15 @@ const CourseDetail = () => {
   const handleAddLesson = async (e) => {
     e.preventDefault();
     setError("");
+    if (!videoFile) {
+      setError("Please select a video file");
+      return;
+    }
     setLoading(true);
     try {
-      await courseApi.addLesson(courseId, { title: lessonTitle, videoUrl });
+      await courseApi.addLesson(courseId, { title: lessonTitle, videoFile });
       setLessonTitle("");
-      setVideoUrl("");
+      setVideoFile(null);
       setShowLessonForm(false);
       fetchLessons();
     } catch (err) {
@@ -117,7 +121,7 @@ const CourseDetail = () => {
       {tab === "lessons" && (
         <div>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <h2>Lessons ({lessons.length})</h2>
+            <h2>{"Lessons (" + lessons.length + ")"}</h2>
             <button onClick={() => setShowLessonForm(!showLessonForm)}>
               {showLessonForm ? "Cancel" : "+ Add Lesson"}
             </button>
@@ -132,16 +136,18 @@ const CourseDetail = () => {
                 onChange={(e) => setLessonTitle(e.target.value)}
                 required
               />
-              <input
-                type="text"
-                placeholder="Video URL"
-                value={videoUrl}
-                onChange={(e) => setVideoUrl(e.target.value)}
-                required
-              />
+              <div>
+                <label>Video File (mp4, mov, avi, mkv, webm)</label>
+                <input
+                  type="file"
+                  accept="video/mp4,video/quicktime,video/x-msvideo,video/x-matroska,video/webm"
+                  onChange={(e) => setVideoFile(e.target.files[0])}
+                />
+              </div>
+              {loading && <p>Uploading to Cloudinary, please wait...</p>}
               {error && <p style={{ color: "red" }}>{error}</p>}
               <button type="submit" disabled={loading}>
-                {loading ? "Adding..." : "Add Lesson"}
+                {loading ? "Uploading..." : "Add Lesson"}
               </button>
             </form>
           )}
@@ -154,10 +160,13 @@ const CourseDetail = () => {
                 key={lesson.id}
                 style={{ border: "1px solid #ccc", margin: "10px 0", padding: "10px" }}
               >
-                <h3>{index + 1}. {lesson.title}</h3>
-                <a href={lesson.videoUrl} target="_blank" rel="noreferrer">
-                  {lesson.videoUrl}
-                </a>
+                <h3>{(index + 1) + ". " + lesson.title}</h3>
+                <video
+                  controls
+                  width="500"
+                  src={lesson.videoUrl}
+                  style={{ marginTop: "8px", display: "block" }}
+                />
               </div>
             ))
           )}
@@ -167,7 +176,7 @@ const CourseDetail = () => {
       {tab === "assignments" && (
         <div>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <h2>Assignments ({assignments.length})</h2>
+            <h2>{"Assignments (" + assignments.length + ")"}</h2>
             <button onClick={() => setShowAssignmentForm(!showAssignmentForm)}>
               {showAssignmentForm ? "Cancel" : "+ Add Assignment"}
             </button>
@@ -211,27 +220,25 @@ const CourseDetail = () => {
             <p>No assignments yet. Add your first assignment!</p>
           ) : (
             assignments.map((assignment) => (
-  <div
-    key={assignment.id}
-    style={{ border: "1px solid #ccc", margin: "10px 0", padding: "10px" }}
-  >
-    <h3>{assignment.title}</h3>
-    {assignment.description && (
-      <p>{assignment.description}</p>
-    )}
-    {assignment.deadline && (
-      <p>{"Deadline: " + new Date(assignment.deadline).toLocaleDateString()}</p>
-    )}
-    {assignment.questionFileUrl && (
-      <button
-        onClick={() => window.open("http://localhost:4444" + assignment.questionFileUrl, "_blank")}
-      >
-        View Question PDF
-      </button>
-    )}
-    <p>{assignment._count.submissions + " submissions"}</p>
-  </div>
-))
+              <div
+                key={assignment.id}
+                style={{ border: "1px solid #ccc", margin: "10px 0", padding: "10px" }}
+              >
+                <h3>{assignment.title}</h3>
+                {assignment.description && <p>{assignment.description}</p>}
+                {assignment.deadline && (
+                  <p>{"Deadline: " + new Date(assignment.deadline).toLocaleDateString()}</p>
+                )}
+                {assignment.questionFileUrl && (
+                  <button
+                    onClick={() => window.open("http://localhost:4444" + assignment.questionFileUrl, "_blank")}
+                  >
+                    View Question PDF
+                  </button>
+                )}
+                <p>{assignment._count.submissions + " submissions"}</p>
+              </div>
+            ))
           )}
         </div>
       )}

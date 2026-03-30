@@ -30,9 +30,10 @@ export async function getInstructorCoursesController(req, res) {
     const data = await getInstructorCourses(req.user.id);
     return res.status(200).json(data);
   } catch (error) {
-    return res.status(error.status || 500).json({ message: error.message });
+    return res.status(500).json({ message: error.message });
   }
 }
+
 export async function getAllCoursesController(req, res) {
   try {
     const data = await getAllCourses();
@@ -41,6 +42,7 @@ export async function getAllCoursesController(req, res) {
     return res.status(500).json({ message: error.message });
   }
 }
+
 export async function postEnrollCourse(req, res) {
   try {
     const { courseId } = req.params;
@@ -50,6 +52,7 @@ export async function postEnrollCourse(req, res) {
     return res.status(error.status || 500).json({ message: error.message });
   }
 }
+
 export async function getEnrolledCoursesController(req, res) {
   try {
     const data = await getEnrolledCourses(req.user.id);
@@ -58,13 +61,17 @@ export async function getEnrolledCoursesController(req, res) {
     return res.status(500).json({ message: error.message });
   }
 }
+
 export async function postAddLesson(req, res) {
   try {
     const { courseId } = req.params;
-    const { title, videoUrl } = req.body;
-    if (!title || !videoUrl) {
-      return res.status(400).json({ error: "Title and videoUrl are required" });
-    }
+    const { title } = req.body;
+    if (!title) return res.status(400).json({ error: "Title is required" });
+    if (!req.file) return res.status(400).json({ error: "Video file is required" });
+
+    // Cloudinary returns the full URL in req.file.path
+    const videoUrl = req.file.path;
+
     const data = await addLesson({ courseId, title, videoUrl });
     return res.status(201).json(data);
   } catch (error) {

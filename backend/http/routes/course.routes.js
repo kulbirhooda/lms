@@ -1,6 +1,7 @@
 import { Router } from "express";
 import requireAuth from "../middlewares/requireAuth.js";
 import requireInstructor from "../middlewares/requireInstructor.js";
+import { uploadVideo } from "../middlewares/upload.js";
 import requireStudent from "../middlewares/requireStudent.js";
 import {
   postCreateCourse,
@@ -20,7 +21,7 @@ router.get("/all", requireAuth, getAllCoursesController);
 // Instructor only
 router.post("/", requireAuth, requireInstructor, postCreateCourse);
 router.get("/", requireAuth, requireInstructor, getInstructorCoursesController);
-router.post("/:courseId/lessons", requireAuth, requireInstructor, postAddLesson);
+router.post("/:courseId/lessons", requireAuth, requireInstructor, uploadVideo.single("video"), postAddLesson);
 router.get("/:courseId/lessons", requireAuth, getCourseLessonsController);
 
 // Student only

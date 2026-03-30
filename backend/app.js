@@ -32,6 +32,7 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.use("/api", assignmentRoutes);
 app.use("/api", progressRoutes);
 
+
 httpServer.listen(PORT, () => {
     console.log(`http://localhost:${PORT}`);
 })

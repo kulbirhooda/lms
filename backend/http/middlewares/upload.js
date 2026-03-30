@@ -1,15 +1,16 @@
 import multer from "multer";
 import path from "path";
 import fs from "fs";
+import { CloudinaryStorage } from "multer-storage-cloudinary";
+import cloudinary from "../lib/cloudinary.js";
 
-const assignmentDir = "uploads/assignments";
-const questionDir = "uploads/questions";
-
-[assignmentDir, questionDir].forEach((dir) => {
+// local storage for docs
+const dirs = ["uploads/assignments", "uploads/questions"];
+dirs.forEach((dir) => {
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
 });
 
-const createStorage = (folder) =>
+const createLocalStorage = (folder) =>
   multer.diskStorage({
     destination: (req, file, cb) => cb(null, folder),
     filename: (req, file, cb) => {
@@ -18,13 +19,44 @@ const createStorage = (folder) =>
     },
   });
 
-const fileFilter = (req, file, cb) => {
+const docFilter = (req, file, cb) => {
   const allowed = [".pdf", ".doc", ".docx"];
   const ext = path.extname(file.originalname).toLowerCase();
   allowed.includes(ext) ? cb(null, true) : cb(new Error("Only PDF and Word documents allowed"));
 };
 
-const limits = { fileSize: 10 * 1024 * 1024 }; // 10MB
+const videoFilter = (req, file, cb) => {
+  const allowed = ["video/mp4", "video/quicktime", "video/x-msvideo", "video/x-matroska", "video/webm"];
+  allowed.includes(file.mimetype) ? cb(null, true) : cb(new Error("Only video files allowed"));
+};
 
-export const uploadAssignment = multer({ storage: createStorage(assignmentDir), fileFilter, limits });
-export const uploadQuestion = multer({ storage: createStorage(questionDir), fileFilter, limits });
+// Cloudinary storage for videos
+const cloudinaryVideoStorage = new CloudinaryStorage({
+  cloudinary,
+  params: {
+    folder: "lms/videos",
+    resource_type: "video",
+    allowed_formats: ["mp4", "mov", "avi", "mkv", "webm"],
+  },
+});
+
+const docLimits = { fileSize: 10 * 1024 * 1024 };    // 10MB
+const videoLimits = { fileSize: 500 * 1024 * 1024 };  // 500MB
+
+export const uploadAssignment = multer({
+  storage: createLocalStorage("uploads/assignments"),
+  fileFilter: docFilter,
+  limits: docLimits,
+});
+
+export const uploadQuestion = multer({
+  storage: createLocalStorage("uploads/questions"),
+  fileFilter: docFilter,
+  limits: docLimits,
+});
+
+export const uploadVideo = multer({
+  storage: cloudinaryVideoStorage,
+  fileFilter: videoFilter,
+  limits: videoLimits,
+});

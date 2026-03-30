@@ -6,7 +6,6 @@ const authHeaders = () => ({
 });
 
 export const courseApi = {
-  // Instructor
   createCourse: async ({ title, description, thumbnail }) => {
     const { data } = await axios({
       method: "post",
@@ -26,7 +25,6 @@ export const courseApi = {
     return data;
   },
 
-  // Student
   getAllCourses: async () => {
     const { data } = await axios({
       method: "get",
@@ -39,7 +37,7 @@ export const courseApi = {
   enrollInCourse: async (courseId) => {
     const { data } = await axios({
       method: "post",
-      url: `/api/courses/${courseId}/enroll`,
+      url: "/api/courses/" + courseId + "/enroll",
       headers: authHeaders(),
     });
     return data;
@@ -53,12 +51,19 @@ export const courseApi = {
     });
     return data;
   },
-  addLesson: async (courseId, { title, videoUrl }) => {
+
+  addLesson: async (courseId, { title, videoFile }) => {
+    const formData = new FormData();
+    formData.append("title", title);
+    formData.append("video", videoFile);
     const { data } = await axios({
       method: "post",
-      url: `/api/courses/${courseId}/lessons`,
-      headers: authHeaders(),
-      data: { title, videoUrl },
+      url: "/api/courses/" + courseId + "/lessons",
+      headers: {
+        ...authHeaders(),
+        "Content-Type": "multipart/form-data",
+      },
+      data: formData,
     });
     return data;
   },
@@ -66,7 +71,7 @@ export const courseApi = {
   getCourseLessons: async (courseId) => {
     const { data } = await axios({
       method: "get",
-      url: `/api/courses/${courseId}/lessons`,
+      url: "/api/courses/" + courseId + "/lessons",
       headers: authHeaders(),
     });
     return data;
